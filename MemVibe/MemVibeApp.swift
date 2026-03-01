@@ -130,7 +130,7 @@ struct MemVibeApp: App {
             Divider()
             
             Button("GitHub") {
-                if let url = URL(string: "https://github.com/harysuryanto") {
+                if let url = URL(string: "https://github.com/harysuryanto/MemVibe") {
                     NSWorkspace.shared.open(url)
                 }
             }
