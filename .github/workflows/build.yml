@@ -28,14 +28,35 @@ jobs:
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGNING_ALLOWED=NO
 
+      - name: Install create-dmg
+        run: brew install create-dmg
+
       - name: Create DMG Installer
         run: |
-          # Create an attractive DMG using create-dmg, which automatically 
-          # handles the volume icon and Applications shortcut
-          npx -y create-dmg --no-sign "build/Build/Products/Release/MemVibe.app" ./
-          
-          # Rename the generated DMG (which may include version info)
-          mv *.dmg MemVibe.dmg
+          # Extract the volume icon from the built .app bundle
+          APP_PATH="build/Build/Products/Release/MemVibe.app"
+          ICON_FILE=$(defaults read "$APP_PATH/Contents/Info" CFBundleIconFile 2>/dev/null || echo "AppIcon")
+          # Ensure .icns extension
+          [[ "$ICON_FILE" != *.icns ]] && ICON_FILE="${ICON_FILE}.icns"
+          ICON_PATH="$APP_PATH/Contents/Resources/$ICON_FILE"
+
+          # Build create-dmg command
+          ARGS=(
+            --volname "MemVibe"
+            --window-pos 200 120
+            --window-size 600 400
+            --icon-size 100
+            --icon "MemVibe.app" 175 190
+            --hide-extension "MemVibe.app"
+            --app-drop-link 425 190
+          )
+
+          # Add volume icon if it exists
+          if [ -f "$ICON_PATH" ]; then
+            ARGS+=(--volicon "$ICON_PATH")
+          fi
+
+          create-dmg "${ARGS[@]}" MemVibe.dmg "$APP_PATH"
 
       - name: Upload DMG Artifact
         uses: actions/upload-artifact@v4
