@@ -28,8 +28,13 @@ A lightweight, high-performance macOS menu bar utility that displays real-time m
 ## Installation
 
 1. Download the latest release from [GitHub Releases](https://github.com/harysuryanto/MemVibe/releases)
-2. Open the `.app` file
-3. MemVibe will appear in your menu bar
+2. Drag `MemVibe.app` to your `/Applications` folder
+3. Run the following command in Terminal to bypass macOS security:
+   ```bash
+   xattr -cr /Applications/MemVibe.app
+   ```
+4. Open MemVibe from your Applications folder
+5. It will appear in your menu bar
 
 ## Usage
 
