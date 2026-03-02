@@ -15,10 +15,8 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Build MemVibe App (Unsigned)
+      - name: Build MemVibe App
         run: |
-          # Builds the app directly to a local build folder, skipping code signing 
-          # since GitHub Actions doesn't have your local Apple Developer credentials.
           xcodebuild clean build \
             -project MemVibe.xcodeproj \
             -scheme MemVibe \
@@ -27,6 +25,12 @@ jobs:
             CODE_SIGN_IDENTITY="" \
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGNING_ALLOWED=NO
+
+      - name: Ad-hoc sign the app
+        run: |
+          # Ad-hoc signing allows the app to launch without an Apple Developer
+          # certificate. Users will need to right-click → Open the first time.
+          codesign --force --deep -s - "build/Build/Products/Release/MemVibe.app"
 
       - name: Install create-dmg
         run: brew install create-dmg
