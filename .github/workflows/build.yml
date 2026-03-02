@@ -31,58 +31,38 @@ jobs:
       - name: Install create-dmg
         run: brew install create-dmg
 
-      - name: Debug - List app bundle contents
+      - name: Generate .icns from source icon
         run: |
-          APP_PATH="build/Build/Products/Release/MemVibe.app"
-          echo "=== Info.plist ==="
-          cat "$APP_PATH/Contents/Info.plist" || echo "No Info.plist found"
-          echo ""
-          echo "=== Resources directory ==="
-          ls -la "$APP_PATH/Contents/Resources/" || echo "No Resources dir"
-          echo ""
-          echo "=== All .icns files ==="
-          find "$APP_PATH" -name "*.icns" -type f || echo "No .icns files found"
+          # The new Xcode .icon format doesn't produce .icns files,
+          # so we convert the source PNG to .icns for the DMG volume icon.
+          SRC_PNG="MemVibe/MemVibeIcon.icon/Assets/AppIcon.png"
+          ICONSET="MemVibe.iconset"
+          mkdir -p "$ICONSET"
+
+          # Generate all required icon sizes using sips
+          for size in 16 32 128 256 512; do
+            sips -z $size $size "$SRC_PNG" --out "$ICONSET/icon_${size}x${size}.png" > /dev/null
+            double=$((size * 2))
+            sips -z $double $double "$SRC_PNG" --out "$ICONSET/icon_${size}x${size}@2x.png" > /dev/null
+          done
+
+          # Convert iconset to icns
+          iconutil -c icns "$ICONSET" -o MemVibe.icns
+          echo "Generated MemVibe.icns successfully"
 
       - name: Create DMG Installer
         run: |
-          APP_PATH="build/Build/Products/Release/MemVibe.app"
-
-          # Try to find the icon: first from Info.plist, then search for any .icns
-          ICON_PATH=""
-          ICON_FILE=$(defaults read "$APP_PATH/Contents/Info" CFBundleIconFile 2>/dev/null || echo "")
-          if [ -n "$ICON_FILE" ]; then
-            [[ "$ICON_FILE" != *.icns ]] && ICON_FILE="${ICON_FILE}.icns"
-            if [ -f "$APP_PATH/Contents/Resources/$ICON_FILE" ]; then
-              ICON_PATH="$APP_PATH/Contents/Resources/$ICON_FILE"
-            fi
-          fi
-
-          # Fallback: find any .icns file in the app bundle
-          if [ -z "$ICON_PATH" ]; then
-            ICON_PATH=$(find "$APP_PATH/Contents/Resources" -name "*.icns" -type f | head -1)
-          fi
-
-          echo "Using volume icon: ${ICON_PATH:-NONE FOUND}"
-
-          # Build create-dmg command
-          ARGS=(
-            --volname "MemVibe"
-            --window-pos 200 120
-            --window-size 600 400
-            --icon-size 100
-            --icon "MemVibe.app" 175 190
-            --hide-extension "MemVibe.app"
-            --app-drop-link 425 190
-          )
-
-          # Add volume icon if found
-          if [ -n "$ICON_PATH" ] && [ -f "$ICON_PATH" ]; then
-            ARGS+=(--volicon "$ICON_PATH")
-          else
-            echo "WARNING: No .icns icon found in app bundle!"
-          fi
-
-          create-dmg "${ARGS[@]}" MemVibe.dmg "$APP_PATH"
+          create-dmg \
+            --volname "MemVibe" \
+            --volicon "MemVibe.icns" \
+            --window-pos 200 120 \
+            --window-size 600 400 \
+            --icon-size 100 \
+            --icon "MemVibe.app" 175 190 \
+            --hide-extension "MemVibe.app" \
+            --app-drop-link 425 190 \
+            MemVibe.dmg \
+            "build/Build/Products/Release/MemVibe.app"
 
       - name: Upload DMG Artifact
         uses: actions/upload-artifact@v4
