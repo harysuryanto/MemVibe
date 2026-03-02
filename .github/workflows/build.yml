@@ -52,6 +52,15 @@ jobs:
 
       - name: Create DMG Installer
         run: |
+          APP_PATH="build/Build/Products/Release/MemVibe.app"
+
+          # Copy .icns into the app bundle so Finder shows the icon
+          cp MemVibe.icns "$APP_PATH/Contents/Resources/MemVibeIcon.icns"
+
+          # Stage the app into a folder (create-dmg expects a source folder)
+          mkdir -p dmg_staging
+          cp -R "$APP_PATH" dmg_staging/
+
           create-dmg \
             --volname "MemVibe" \
             --volicon "MemVibe.icns" \
@@ -62,7 +71,7 @@ jobs:
             --hide-extension "MemVibe.app" \
             --app-drop-link 425 190 \
             MemVibe.dmg \
-            "build/Build/Products/Release/MemVibe.app"
+            dmg_staging/
 
       - name: Upload DMG Artifact
         uses: actions/upload-artifact@v4
