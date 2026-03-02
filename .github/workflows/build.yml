@@ -30,17 +30,12 @@ jobs:
 
       - name: Create DMG Installer
         run: |
-          # Prepare the staging folder
-          mkdir -p dmg_staging
-
-          # Copy the built .app from the derived data path
-          cp -R build/Build/Products/Release/MemVibe.app dmg_staging/
-
-          # Create the Applications shortcut for the drag-and-drop experience
-          ln -s /Applications dmg_staging/Applications
-
-          # Generate the DMG file
-          hdiutil create -volname "MemVibe" -srcfolder dmg_staging -ov -format UDZO MemVibe.dmg
+          # Create an attractive DMG using create-dmg, which automatically 
+          # handles the volume icon and Applications shortcut
+          npx create-dmg "build/Build/Products/Release/MemVibe.app" ./
+          
+          # Rename the generated DMG (which may include version info)
+          mv *.dmg MemVibe.dmg
 
       - name: Upload DMG Artifact
         uses: actions/upload-artifact@v4
