@@ -32,7 +32,7 @@ jobs:
         run: |
           # Create an attractive DMG using create-dmg, which automatically 
           # handles the volume icon and Applications shortcut
-          npx create-dmg "build/Build/Products/Release/MemVibe.app" ./
+          npx -y create-dmg --no-sign "build/Build/Products/Release/MemVibe.app" ./
           
           # Rename the generated DMG (which may include version info)
           mv *.dmg MemVibe.dmg
