@@ -137,15 +137,9 @@ struct MemVibeApp: App {
                 }
             }
             
-            Button("GitHub") {
-                if let url = URL(string: "https://github.com/harysuryanto/MemVibe") {
-                    NSWorkspace.shared.open(url)
-                }
-            }
-            
             Divider()
             
-            Button("Quit MemVibe") {
+            Button("Quit") {
                 NSApplication.shared.terminate(nil)
             }
             .keyboardShortcut("q")
