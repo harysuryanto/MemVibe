@@ -20,6 +20,8 @@ import ServiceManagement
  * - Thresholds: 5-tier face system for granular feedback.
  */
 
+// --- DATA MODELS ---
+
 enum DisplayMode: String, CaseIterable, Identifiable, Codable {
     case emoji = "Emoji", percentage = "Percentage", both = "Both"
     var id: String { self.rawValue }
@@ -47,7 +49,7 @@ class MemoryMonitor: ObservableObject {
         timer?.invalidate()
         updateMemory()
         
-        // Standard scheduled timer to allow menu interaction without dismissing submenus
+        // Use standard scheduled timer to prevent UI glitches in MenuBarExtra
         timer = Timer.scheduledTimer(withTimeInterval: interval, repeats: true) { [weak self] _ in
             self?.updateMemory()
         }
@@ -121,7 +123,6 @@ struct MemVibeApp: App {
 
             Divider()
             
-            // Auto Launch Toggle
             Toggle("Launch at Login", isOn: $autoLaunch)
                 .onChange(of: autoLaunch) { _, newValue in
                     toggleAutoLaunch(enabled: newValue)
@@ -129,11 +130,20 @@ struct MemVibeApp: App {
                 
             Divider()
             
+            Button("Check for Updates...") {
+                // Link to GitHub Releases page
+                if let url = URL(string: "https://github.com/harysuryanto/MemVibe/releases") {
+                    NSWorkspace.shared.open(url)
+                }
+            }
+            
             Button("GitHub") {
                 if let url = URL(string: "https://github.com/harysuryanto/MemVibe") {
                     NSWorkspace.shared.open(url)
                 }
             }
+            
+            Divider()
             
             Button("Quit MemVibe") {
                 NSApplication.shared.terminate(nil)
