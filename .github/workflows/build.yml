@@ -1,0 +1,50 @@
+name: Build MemVibe DMG
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+jobs:
+  build:
+    name: Build and Package macOS App
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Build MemVibe App (Unsigned)
+        run: |
+          # Builds the app directly to a local build folder, skipping code signing 
+          # since GitHub Actions doesn't have your local Apple Developer credentials.
+          xcodebuild clean build \
+            -project MemVibe.xcodeproj \
+            -scheme MemVibe \
+            -configuration Release \
+            -derivedDataPath ./build \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO
+
+      - name: Create DMG Installer
+        run: |
+          # Prepare the staging folder
+          mkdir -p dmg_staging
+
+          # Copy the built .app from the derived data path
+          cp -R build/Build/Products/Release/MemVibe.app dmg_staging/
+
+          # Create the Applications shortcut for the drag-and-drop experience
+          ln -s /Applications dmg_staging/Applications
+
+          # Generate the DMG file
+          hdiutil create -volname "MemVibe" -srcfolder dmg_staging -ov -format UDZO MemVibe.dmg
+
+      - name: Upload DMG Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: MemVibe-Installer
+          path: MemVibe.dmg
+          retention-days: 7
