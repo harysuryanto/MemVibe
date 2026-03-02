@@ -19,6 +19,11 @@ A lightweight, high-performance macOS menu bar utility that displays real-time m
 - **Auto-Launch** - Start automatically at login
 - **Persistent Settings** - Your preferences are saved automatically
 
+## Screenshots
+
+![MemVibe Menu Bar](./screenshots/menu-bar.png)
+![MemVibe Settings](./screenshots/settings.png)
+
 ## Installation
 
 1. Download the latest release from [GitHub Releases](https://github.com/harysuryanto/MemVibe/releases)
