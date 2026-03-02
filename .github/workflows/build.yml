@@ -31,14 +31,38 @@ jobs:
       - name: Install create-dmg
         run: brew install create-dmg
 
+      - name: Debug - List app bundle contents
+        run: |
+          APP_PATH="build/Build/Products/Release/MemVibe.app"
+          echo "=== Info.plist ==="
+          cat "$APP_PATH/Contents/Info.plist" || echo "No Info.plist found"
+          echo ""
+          echo "=== Resources directory ==="
+          ls -la "$APP_PATH/Contents/Resources/" || echo "No Resources dir"
+          echo ""
+          echo "=== All .icns files ==="
+          find "$APP_PATH" -name "*.icns" -type f || echo "No .icns files found"
+
       - name: Create DMG Installer
         run: |
-          # Extract the volume icon from the built .app bundle
           APP_PATH="build/Build/Products/Release/MemVibe.app"
-          ICON_FILE=$(defaults read "$APP_PATH/Contents/Info" CFBundleIconFile 2>/dev/null || echo "AppIcon")
-          # Ensure .icns extension
-          [[ "$ICON_FILE" != *.icns ]] && ICON_FILE="${ICON_FILE}.icns"
-          ICON_PATH="$APP_PATH/Contents/Resources/$ICON_FILE"
+
+          # Try to find the icon: first from Info.plist, then search for any .icns
+          ICON_PATH=""
+          ICON_FILE=$(defaults read "$APP_PATH/Contents/Info" CFBundleIconFile 2>/dev/null || echo "")
+          if [ -n "$ICON_FILE" ]; then
+            [[ "$ICON_FILE" != *.icns ]] && ICON_FILE="${ICON_FILE}.icns"
+            if [ -f "$APP_PATH/Contents/Resources/$ICON_FILE" ]; then
+              ICON_PATH="$APP_PATH/Contents/Resources/$ICON_FILE"
+            fi
+          fi
+
+          # Fallback: find any .icns file in the app bundle
+          if [ -z "$ICON_PATH" ]; then
+            ICON_PATH=$(find "$APP_PATH/Contents/Resources" -name "*.icns" -type f | head -1)
+          fi
+
+          echo "Using volume icon: ${ICON_PATH:-NONE FOUND}"
 
           # Build create-dmg command
           ARGS=(
@@ -51,9 +75,11 @@ jobs:
             --app-drop-link 425 190
           )
 
-          # Add volume icon if it exists
-          if [ -f "$ICON_PATH" ]; then
+          # Add volume icon if found
+          if [ -n "$ICON_PATH" ] && [ -f "$ICON_PATH" ]; then
             ARGS+=(--volicon "$ICON_PATH")
+          else
+            echo "WARNING: No .icns icon found in app bundle!"
           fi
 
           create-dmg "${ARGS[@]}" MemVibe.dmg "$APP_PATH"
