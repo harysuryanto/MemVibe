@@ -21,8 +21,9 @@ A lightweight, high-performance macOS menu bar utility that displays real-time m
 
 ## Screenshots
 
-![MemVibe Menu Bar](./screenshots/menu-bar.png)
-![MemVibe Settings](./screenshots/settings.png)
+<img width="232" height="69" alt="Screenshot 2026-03-02 at 06 36 15" src="https://github.com/user-attachments/assets/931c75cd-76b7-421a-b749-740bf14222eb" /><br /><br />
+<img width="230" height="70" alt="Screenshot 2026-03-02 at 06 38 38" src="https://github.com/user-attachments/assets/c29cee81-983c-4a5d-b6ee-1ff728494c20" /><br /><br />
+<img width="349" height="231" alt="Screenshot 2026-03-02 at 06 51 54" src="https://github.com/user-attachments/assets/52fcf655-9b35-421d-a1ad-b4baf1564772" />
 
 ## Installation
 
