@@ -57,6 +57,10 @@ jobs:
       - name: Create DMG Installer
         run: |
           APP_PATH="build/Build/Products/Release/MemVibe.app"
+          
+          # Extract the app version from Info.plist
+          APP_VERSION=$(defaults read "$PWD/$APP_PATH/Contents/Info.plist" CFBundleShortVersionString || echo "1.0.0")
+          DMG_NAME="MemVibe-${APP_VERSION}.dmg"
 
           # Copy .icns into the app bundle so Finder shows the icon
           cp MemVibe.icns "$APP_PATH/Contents/Resources/MemVibeIcon.icns"
@@ -74,12 +78,15 @@ jobs:
             --icon "MemVibe.app" 175 190 \
             --hide-extension "MemVibe.app" \
             --app-drop-link 425 190 \
-            MemVibe.dmg \
+            "$DMG_NAME" \
             dmg_staging/
+            
+          # Export DMG_NAME to GitHub ENV
+          echo "dmg_name=$DMG_NAME" >> $GITHUB_ENV
 
       - name: Upload DMG Artifact
         uses: actions/upload-artifact@v4
         with:
           name: MemVibe-Installer
-          path: MemVibe.dmg
+          path: ${{ env.dmg_name }}
           retention-days: 7
